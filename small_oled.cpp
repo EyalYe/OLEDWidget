@@ -227,6 +227,7 @@ void show_stock(int num){
 }
 
 void my_setup(){
+  Wire.begin(SDA, SCL);
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
@@ -272,7 +273,6 @@ void my_setup(){
 
   // starting up the NTP, Wire and MPU connection
   timeClient.begin();
-  Wire.begin();
   byte status = mpu.begin();
   Serial.print(F("MPU6050 status: "));
   Serial.println(status);

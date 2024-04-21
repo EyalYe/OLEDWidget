@@ -29,6 +29,8 @@
 #define DT 20
 #define PAGES 10
 #define ANIMATIONS 4
+#define SDA 21
+#define SCL 22
 
 void getSubscriberCount();
 void get_temp();
