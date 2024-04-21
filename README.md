@@ -1,5 +1,5 @@
 # OLEDWidget
-This is a small project I made out of boredom. It displays the weather and really any kind of information you like, as long as you have access to an API that serves this information. Every time "packy" hits the top of the screen, the page changes.
+This is a small project I made out of boredom. It displays the weather and really any kind of information you like, as long as you have access to an API that serves this information. Every time "packy" hits the top of the screen, the page changes. If you wish to run this project on battery power alone comment out Serial.begin(...) in small_oled.ino.
 ## Hardware
 - ESP32-C6
 - SSD1306 0.96" OLED display
