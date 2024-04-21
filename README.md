@@ -12,3 +12,6 @@ Just update small_oled.cpp with your Wi-Fi SSID and password, get an API key as 
 
 
 I used https://javl.github.io/image2cpp/ to convert images to icons, which can be seen in the logos.h file. If you'd like to add animated logos, you can do so, but note that in some cases, the number of frames is hardcoded in the implementation.
+
+## Small demonstration
+https://youtu.be/hRmmU7YOUD4
