@@ -4,6 +4,7 @@ This is a small project I made out of boredom. It displays the weather and reall
 - ESP32-C6
 - SSD1306 0.96" OLED display
 - GY-521 MPU6050 (3-axis gyroscope + 3-axis accelerometer)
+  
 Feel free to add a battery and battery management board if you'd like.
 ## Wiring
 The only connections required are the SDA, SCL, VCC, and ground pins of the OLED display and MPU to the corresponding pins on the ESP32. SCL and SDA are defined in small_oled.h.
