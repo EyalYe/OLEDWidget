@@ -1,21 +1,23 @@
 #include "small_oled.h"
 #include "logos.h"
+#include "secrets.h"
 
 
 WiFiClient wifiClient;
-//Wifi
-const char* ssid     = "";  //WiFi Name
-const char* password = "";        // WiFi Password
+
+// WiFi
+const char* ssid     = WIFI_NAME;             //WiFi Name
+const char* password = WIFI_PASSWORD;         // WiFi Password
 //YouTube
-const char* youtubeApiKey = "";
-const char* channelId = "";
+const char* youtubeApiKey = YOUTUBE_API_KEY;
+const char* channelId = CHANNEL_ID;
 //Weather
-const char* lat = "";
-const char* lon = "";
+const char* lat = LATITUDE;
+const char* lon = LONGITUDE;
 
 // global variables
 unsigned long timer = 0;
-double x, y;
+double x, y, past_x, past_y;
 double ax, ay;
 float temp;
 float past_z;
@@ -30,6 +32,7 @@ int monthDay;
 int currentMonth;
 int currentYear;
 int currentHour;
+int dead_packy_counter;
 int next_page_flag = 0;
 DynamicJsonDocument doc(4096);
 String formattedTime;
@@ -105,7 +108,7 @@ void show_logo_animation(int place, uint8_t* animated_logo){
 
 void show_page(int page){
   if(page == 0){
-    timeClient.update();
+    //timeClient.update();
     display.print(" ");
     display.println(formattedTime);
     //display.print(" "); display.print(monthDay);display.print("/");display.print(currentMonth);display.print("/");display.print(currentYear);
@@ -226,8 +229,49 @@ void show_stock(int num){
 
 }
 
+void update_time(){
+  unsigned long currentMillis = millis();
+  bool updated = false;
+
+  while (millis() - currentMillis < 1000) {
+    if (timeClient.update()) {
+      updated = true;
+      break;
+    }
+  }
+
+  if (updated) {
+    Serial.println("Time updated");
+    Serial.println(timeClient.getFormattedTime());
+  } else {
+    reset_wifi();
+  }
+  //timeClient.update();
+}
+
+void reset_wifi(){
+  Serial.println("Resetting WiFi");
+  WiFi.disconnect();
+  delay(1000);
+  WiFi.begin(ssid, password);
+  int i = 0;
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    reset_screen();
+    display.fillRect(5, 40, (i++)*3, 10, 1);
+    i = i > 40 ? 0 : i;
+    display.setCursor(0, 0);
+    display.print("Connecting to ");
+    display.println(ssid);
+    display.display();
+    delay(300);
+  }
+  Serial.println("WiFi reconnected");
+  update_time();
+}
+
 void my_setup(){
-  Wire.begin(SDA, SCL);
+  //Wire.begin(SDA, SCL);
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
@@ -277,20 +321,30 @@ void my_setup(){
   Serial.print(F("MPU6050 status: "));
   Serial.println(status);
   while(status!=0){ } // stop everything if could not connect to MPU6050
+  /*
   Serial.println(F("Calculating offsets, do not move MPU6050"));
   delay(500);
   mpu.calcOffsets(); // gyro and accelero
   Serial.println("Done!\n");
+  */
+
+  mpu.setAccOffsets(AccXOffset, AccYOffset, AccZOffset);
+  mpu.setGyroOffsets(GyroXOffset, GyroYOffset, GyroZOffset);
 
   // getting all the relavent data
   //get_temp();
   getSubscriberCount();
+  update_time();
 
   // setting up the scren
   reset_screen();
   display.setTextSize(2);             // Normal 1:1 pixel scale
   display.setTextColor(SSD1306_WHITE);        // Draw white text
-  curr_page = 3;
+  curr_page = 0;
+
+  past_x = 0;
+  past_y = 0;
+  dead_packy_counter = 0;
 }
 
 void my_loop(){
@@ -314,22 +368,38 @@ void my_loop(){
     curr_day = monthDay;
     get_temp();
     to_temp_flag = 0;
+    update_time();
   }
 
   // calculating packy's movement
-  ax = ax + mpu.getAccAngleX() * 0.1;
-  ay = ay + mpu.getAccAngleY() * 0.15 - (mpu.getGyroZ() - past_z) * 0.5;
-  past_z = mpu.getGyroZ();
+  float accAngleX = mpu.getAccAngleX();  // calculated from accelerometer
+  float accAngleY = mpu.getAccAngleY();
+
+  float gyroX = mpu.getGyroX();  // degrees/sec
+  float gyroY = mpu.getGyroY();
+
+  float alpha = 0.95;  // Complementary filter weight
+
+  // Integrate gyro data (gyroX and gyroY are in deg/sec, DT in ms)
+  ax = alpha * (ax + gyroX * DT * 0.001) + (1 - alpha) * accAngleX;
+  ay = alpha * (ay + gyroY * DT * 0.001) + (1 - alpha) * accAngleY;
+
+
   x = x + 0.5 * ax * DT * DT * 0.001;
-  y = y + 0.5 * ay * DT * DT * 0.001;
+  y = y + 0.5 * ay * DT * DT * 0.05;
   x = x > RAD ? x : RAD;
   x = x < 128 - RAD ? x : 128 - RAD - 1;
   y = y > RAD ? y : RAD;
   y = y < 64 - RAD ? y : 64 - RAD - 1;
+
+
   if(y == RAD || y == 64 - RAD - 1)
-    ay = -ay * 0.7;
+    ay = -ay * 0.5;
   if(x == RAD || x == 128 - RAD - 1)
     ax = -ax * 0.7;
+
+
+
   if(y == RAD){
     next_page_flag = 1;
   }
@@ -358,7 +428,8 @@ void my_loop(){
   }
   // showing current screen
   show_page(curr_page);
-
+  
+  #ifdef KEEP_PACKY_ALIVE
   // direction of packy
   if(ax > 0){
     dir_x = 1;
@@ -366,17 +437,31 @@ void my_loop(){
     dir_x = -1;
   }
 
-  // drawing packy
-  for(int i = 1; i <= RAD; i++)
-    display.drawCircle((int)x, (int)y , i, 1);
-  if((time_on_screen / 10) % 2 == 0){
-    for(int i = 0; i <= RAD; i ++){
-      for(int j = 0; j <= RAD - i; j++){
-        display.drawPixel(x + dir_x * (j+i), y + j, 0);
-        display.drawPixel(x + dir_x * (j+i), y - j, 0);
+  if(past_x == x && past_y == y){
+    dead_packy_counter++;
+  }
+  else{
+    dead_packy_counter = 0;
+  }
+
+  if(dead_packy_counter < 5000){
+    // drawing packy
+    for(int i = 1; i <= RAD; i++)
+      display.drawCircle((int)x, (int)y , i, 1);
+    if((time_on_screen / 10) % 2 == 0){
+      for(int i = 0; i <= RAD; i ++){
+        for(int j = 0; j <= RAD - i; j++){
+          display.drawPixel(x + dir_x * (j+i), y + j, 0);
+          display.drawPixel(x + dir_x * (j+i), y - j, 0);
+        }
       }
     }
   }
+  past_x = x;
+  past_y = y;
+  #endif
+
+
   display.display();
   time_on_screen++;
   delay(DT);

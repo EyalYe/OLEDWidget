@@ -18,7 +18,6 @@
 
 #define NTP_OFFSET  10800 // In seconds
 #define NTP_INTERVAL 60 * 1000   // In miliseconds
-#define NTP_ADDRESS  "1.asia.pool.ntp.org"
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -32,6 +31,8 @@
 #define SDA 21
 #define SCL 22
 
+//#define KEEP_PACY_ALIVE
+
 void getSubscriberCount();
 void get_temp();
 void reset_screen();
@@ -41,4 +42,6 @@ void show_page(int page);
 void show_animation(int num);
 void show_stock(int num);
 void show_logo_animation(int place, uint8_t* animated_logo);
+void update_time();
+void reset_wifi();
 #endif

@@ -1,7 +1,7 @@
 #include "small_oled.h"
 
 void setup(){
-  Serial.begin(115200);
+  //Serial.begin(115200);
   my_setup();
 }
 
