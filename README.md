@@ -1,7 +1,3 @@
-Here’s a polished and slightly more engaging version of your README:
-
----
-
 # OLEDWidget
 
 **OLEDWidget** is a fun little project I created out of curiosity (and boredom). It displays real-time weather data—or pretty much any information you like, as long as there's an API to serve it. A character named **"Packy"** bounces around the screen, and each time he hits the top edge, a new information page appears.
