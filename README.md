@@ -2,7 +2,7 @@
 
 **OLEDWidget** is a fun little project I created out of curiosity (and boredom). It displays real-time weather data—or pretty much any information you like, as long as there's an API to serve it. A character named **"Packy"** bounces around the screen, and each time he hits the top edge, a new information page appears.
 
-If you're running the project on battery power, remember to comment out `Serial.begin(...)` in `small_oled.ino` to save energy.
+If you're running the project on battery power, remember to comment out `Serial.begin(...)` in `small_oled.ino`.
 
 ---
 
