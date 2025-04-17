@@ -28,8 +28,7 @@ All you need to connect are:
 
 If you’d like to specify custom `SCL` and `SDA` pins:
 - Set them in `small_oled.h`
-- Uncomment the corresponding line in the `setup()` function inside `small_oled.cpp`
-
+- Uncomment the corresponding line (`274:  Wire.begin(SDA, SCL);`) in the `setup()` function inside `small_oled.cpp`
 ---
 
 ## 🚀 Getting Started
