@@ -31,8 +31,6 @@
 #define SDA 21
 #define SCL 22
 
-//#define KEEP_PACY_ALIVE
-
 void getSubscriberCount();
 void get_temp();
 void reset_screen();

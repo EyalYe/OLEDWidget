@@ -386,7 +386,7 @@ void my_loop(){
 
 
   x = x + 0.5 * ax * DT * DT * 0.001;
-  y = y + 0.5 * ay * DT * DT * 0.05;
+  y = y + 0.5 * ay * DT * DT * 0.005;
   x = x > RAD ? x : RAD;
   x = x < 128 - RAD ? x : 128 - RAD - 1;
   y = y > RAD ? y : RAD;

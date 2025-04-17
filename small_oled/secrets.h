@@ -22,4 +22,7 @@
 
 // NTP Server change this to your local NTP server
 #define NTP_ADDRESS  "1.asia.pool.ntp.org"
+
+// uncomment to see packy jumping around
+#define KEEP_PACKY_ALIVE
 #endif
